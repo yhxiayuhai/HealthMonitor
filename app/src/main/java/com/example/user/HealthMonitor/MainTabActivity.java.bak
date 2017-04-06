@@ -1,0 +1,625 @@
+﻿package com.example.user.register;
+
+import android.annotation.SuppressLint;
+import android.app.ActionBar;
+import android.app.ActionBar.LayoutParams;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Vibrator;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.view.Window;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.location.Poi;
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.model.LatLng;
+import com.example.user.register.info.UserAction;
+import com.example.user.register.stepcount.StepArcView;
+import com.example.user.register.util.Config;
+
+import org.json.JSONException;
+
+import java.lang.reflect.Method;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * Created by user on 2016/11/28.
+ */
+public class MainTabActivity extends LoginActivity implements SensorEventListener{
+
+    private static final String TAG = "MainActivity";   //日志的TAG
+    private TextView track,steps,information,alarm;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle toggle;
+    private ActionBar actionBar;
+  //  private Histogram histogram;
+    private StepArcView cc;
+    private MapView mMapView = null;
+    private BaiduMap baiduMap = null;
+    private Marker marker = null;
+    private BitmapDescriptor bd = BitmapDescriptorFactory.fromResource(R.drawable.location_arrows);
+    private LocationClient locationClient = null;
+    boolean isFirstLoc = true;
+  //  private int[] data = new int[] { 4000, 1000, 1000, 2000, 3000, 5000, 8000 };
+    private int[] text = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+    SensorManager sensorManager;
+    float[][] DataBef = new float[50][3];
+    int count = 0 ;
+    final double[] Template = {9.1949,9.0264,8.9102,8.9692,9.0254,9.0762,9.0830,9.0264,8.9723,8.9611,8.9177,8.8882,3.7687,
+            3.5643,2.8697,2.2248,2.7509,3.7551,6.5429,13.1833,19.3681,21.2533,21.9725,22.1962,22.8445,23.6936,21.8338,9.5533,
+            9.656,9.7048,9.9051,9.9854,9.9928,10.0869,10.1474,10.1128,10.0037,9.8674,9.781,9.6936,9.7223,9.1685,8.8905,9.9989,
+            9.9965,9.6513,9.6183,9.7549,9.765,9.7928};
+    boolean flag;
+    //double start=0;
+    private Vibrator vibrator;
+    private Dialog mDialog;
+    private Handler mOffHandle;
+    private TextView mOffTextView;
+    private Timer mOffTime;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SDKInitializer.initialize(getApplicationContext());
+        setContentView(R.layout.activity_maintab);
+        vibrator = (Vibrator)this.getSystemService(VIBRATOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mMapView = (MapView)findViewById(R.id.bmapView);
+        baiduMap = mMapView.getMap();
+        locationClient = new LocationClient(getApplicationContext());
+        locationClient.registerLocationListener(myListener); //注册监听函数
+        setLocationOption(); //设置定位参数
+        requestLocation();
+        initArcView();
+      //  initHistogram();
+        ToggleButton tb = (ToggleButton)findViewById(R.id.tb);
+    }
+
+    public BDLocationListener myListener = new BDLocationListener() {
+        @Override
+        public void onReceiveLocation(final BDLocation bdLocation) {
+            Log.d(TAG, "BDLocationListener -> onReceiveLocation");
+            //mapView销毁后不在处理新接收的位置
+            if(bdLocation == null || mMapView == null) {
+                Log.d(TAG, "BDLocation or mapView is null");
+                return;
+            }
+            if(!bdLocation.getLocationDescribe().isEmpty()) {
+            }else if (bdLocation.hasAddr()) {
+            }else {
+                Log.d(TAG, "BDLocation has no addr info");
+                return;
+            }
+            //以下打印日志，打印一些详细信息，供参考
+            StringBuilder sBuilder = new StringBuilder();
+            sBuilder.append("\nTime : " + bdLocation.getTime());            //服务器返回的当前定位时间
+            sBuilder.append("\nError code : " + bdLocation.getLocType());   //定位结果码
+            sBuilder.append("\nLatitude : " + bdLocation.getLatitude()+0.00374531687912);    //获取纬度坐标
+            sBuilder.append("\nLongtitude : " + bdLocation.getLongitude()+0.004474687519); //获取经度坐标
+            sBuilder.append("\nRadius : " + bdLocation.getRadius());        //位置圆心
+            //根据定位结果码判断是何种定位以及定位请求是否成功
+            if(bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
+                //GPS定位结果
+                sBuilder.append("\nSpeed : " + bdLocation.getSpeed());//当前运动的速度
+                sBuilder.append("\nSatellite number : " + bdLocation.getSatelliteNumber());//定位卫星数量
+                sBuilder.append("\nHeight : " + bdLocation.getAltitude());  //位置高度
+                sBuilder.append("\nDirection : " + bdLocation.getDirection());  //定位方向
+                sBuilder.append("\nAddrStr : " + bdLocation.getAddrStr());  //位置详细信息
+                sBuilder.append("\nStreet : " + bdLocation.getStreetNumber() + " " + bdLocation.getStreet());//街道号、路名
+                sBuilder.append("\nDescribtion : GPS 定位成功");
+            }else if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
+                //网络定位结果
+                sBuilder.append("\nAddrStr : " + bdLocation.getAddrStr()); //位置详细信息
+                sBuilder.append("\nStreet : " + bdLocation.getStreetNumber() + " " + bdLocation.getStreet());//街道号、路名
+                sBuilder.append("\nOperators : " + bdLocation.getOperators());//运营商编号
+                sBuilder.append("\nDescribtion : 网络定位成功");
+            }else if(bdLocation.getLocType() == BDLocation.TypeOffLineLocation) {
+                //离线定位结果
+                sBuilder.append("\nAddrStr : " + bdLocation.getAddrStr()); //位置详细信息
+                sBuilder.append("\nStreet : " + bdLocation.getStreetNumber() + " " + bdLocation.getStreet());//街道号、路名
+                sBuilder.append("\nDescribtion : 离线定位成功");
+            }else if(bdLocation.getLocType() == BDLocation.TypeServerError) {
+                sBuilder.append("\nDescribtion : 服务端网络定位失败，可以反馈IMEI号和大体定位时间到loc-bugs@baidu.com，会有人追查原因");
+            }else if(bdLocation.getLocType() == BDLocation.TypeNetWorkException) {
+                sBuilder.append("\nDescribtion : 网络故障，请检查网络连接是否正常");
+            }else if(bdLocation.getLocType() == BDLocation.TypeCriteriaException) {
+                sBuilder.append("\nDescribtion : 无法定位结果，一般由于定位SDK内部检测到没有有效的定位依据，" +
+                        "比如在飞行模式下就会返回该定位类型， 一般关闭飞行模式或者打开wifi就可以再次定位成功");
+            }
+            //位置语义化描述
+            sBuilder.append("\nLocation decribe : " + bdLocation.getLocationDescribe());
+            List<Poi> poiList = bdLocation.getPoiList();  //poi信息（就是附近的一些建筑信息）,只有设置可获取poi才有值
+            if(poiList != null) {
+                sBuilder.append("\nPoilist size : " + poiList.size());
+                for (Poi p : poiList) {
+                    sBuilder.append("\nPoi : " + p.getId() + " " + p.getName() + " " + p.getRank());
+                }
+            }
+            Log.d(TAG, "定位结果详细信息 : " + sBuilder.toString());    //打印以上信息
+
+            //构建生成定位数据对象            //定位数据构建器
+            MyLocationData myLocationData = new MyLocationData.Builder()
+                    .accuracy(bdLocation.getRadius())   //设置定位数据的精度信息，单位米
+                    .direction(100)                     //设定定位数据的方向信息
+                    .latitude(bdLocation.getLatitude()+0.00374531687912) //设定定位数据的纬度
+                    .longitude(bdLocation.getLongitude()+0.004474687519)//设定定位数据的经度
+                    .build();   //构建生生定位数据对象
+            baiduMap.setMyLocationData(myLocationData);  //设置定位数据, 只有先允许定位图层后设置数据才会生效,setMyLocationEnabled(boolean)
+            UserAction ua = new UserAction(MainTabActivity.this);
+            try{
+                String username = preferences.getString("UserAccount",null);
+                Calendar c = Calendar.getInstance();
+                String year = String.valueOf(c.get(Calendar.YEAR));
+                String month = String.valueOf(c.get(Calendar.MONTH)+1);
+                String date = String.valueOf(c.get(Calendar.DATE));
+                String hour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+                String minute = String.valueOf(c.get(Calendar.MINUTE));
+
+                ua.uploadLocation("LI", username, String.valueOf(bdLocation.getLongitude()+0.004474687519), String.valueOf(bdLocation.getLatitude()+0.00374531687912),
+                        year + month + date+ hour + minute, Config.ACTION_UPLOAD,
+                        new UserAction.SuccessCallback() {
+                    @Override
+                    public void onSuccess(String jsonResult) {
+                        Toast toast = Toast.makeText(MainTabActivity.this,"信息上传成功！",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_VERTICAL,0,0);
+                        toast.show();
+                    }
+                },new UserAction.FailCallback() {
+
+                    @Override
+                    public void onFail(int status, int reason) {
+                        Toast toast = Toast.makeText(MainTabActivity.this,"上传失败",Toast.LENGTH_SHORT);
+                    }
+                });
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            if(isFirstLoc) {
+                //地理坐标基本数据结构：经度和纬度
+                LatLng latLng = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+                resetOverlay(latLng);
+                //描述地图状态将要发生的变化         //生成地图状态将要发生的变化,newLatLngZoom设置地图新中心点
+                MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLngZoom(latLng,18.0f);
+                baiduMap.animateMapStatus(mapStatusUpdate);  //以动画方式更新地图状态，动画耗时 300 ms  (聚焦到当前位置)
+            }
+        }
+    };
+
+    private void requestLocation() {
+        if(locationClient != null && locationClient.isStarted()) {
+            Log.d(TAG, "requestLocation.");
+            locationClient.requestLocation();
+        }else if (locationClient != null && !locationClient.isStarted()) {
+            Log.d(TAG, "locationClient is started : " + locationClient.isStarted());
+            locationClient.start();
+        }else {
+            Log.e(TAG,"request location error!!!");
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        sensorManager.registerListener(this,sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),sensorManager.SENSOR_DELAY_GAME);
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onStop(){
+        sensorManager.unregisterListener(this);
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        locationClient.unRegisterLocationListener(myListener);
+        locationClient.stop();
+        baiduMap.setMyLocationEnabled(false);
+        clearOverlay();
+        bd.recycle();
+        mMapView.onDestroy();
+        mMapView = null;
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        mMapView.onPause();
+    }
+
+    private void setLocationOption() {
+        //获取配置参数对象，用于配置定位SDK各配置参数，比如定位模式、定位时间间隔、坐标系类型等
+        LocationClientOption option = new LocationClientOption();
+        option.setOpenGps(true);        //可选，默认false,设置是否使用gps
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);  //设置定位模式为高精度
+        option.setCoorType("bd09ll"); //可选，默认gcj02，设置返回的定位结果坐标系
+        option.setIsNeedAddress(true);
+        option.setIsNeedLocationDescribe(true);
+        option.setIsNeedLocationPoiList(true);
+        option.setNeedDeviceDirect(true);
+        option.setIgnoreKillProcess(false);
+        option.SetIgnoreCacheException(false);
+        option.setEnableSimulateGps(false);
+        option.setScanSpan(100000);
+        locationClient.setLocOption(option);
+    }
+
+    private void initOverlay(LatLng latLng) {
+        Log.d(TAG, "Start initOverlay");
+
+        //设置覆盖物添加的方式与效果
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)//mark出现的位置
+                .icon(bd)       //mark图标
+                .draggable(true)//mark可拖拽
+                .animateType(MarkerOptions.MarkerAnimateType.drop);//从天而降的方式
+        marker = (Marker) (baiduMap.addOverlay(markerOptions));//地图上添加mark
+        Log.d(TAG,"End initOverlay");
+    }
+    //清除覆盖物
+    private void clearOverlay(){
+        baiduMap.clear();
+        marker = null;
+    }
+    //重置覆盖物
+    private void resetOverlay(LatLng latLng) {
+        clearOverlay();
+        initOverlay(latLng);
+    }
+
+
+
+    @Override
+    public void onSensorChanged(SensorEvent event){
+        float[] value = event.values;
+        if (flag) {
+            for (int j = 0; j < 3; j++) {
+                DataBef[count][j] = value[j];
+            }
+            count++;
+            if (count == 50) {
+                DataCalculate(DataBef);
+                //  writeFile(DataBef, filePath);
+                // show.setText("finish");
+                flag = false;
+                count = 0;
+                DataBef = null;
+                DataBef = new float[50][3];
+            }
+        }
+        else {
+            double acc = 0;
+            for (int i = 0; i < 3; i++) {
+                acc = acc + value[i] * value[i];
+            }
+            acc = Math.sqrt(acc);
+            if (acc<3.7)
+                flag = true;
+        }
+    }
+
+    public void DataCalculate(float[][] Data_in){
+        double svm = 0;
+        double[]  DataAft = new double[50];
+        for (int i=0; i<50; i++){
+            for (int j=0; j<3; j++){
+                svm = svm + Data_in[i][j]*Data_in[i][j];
+            }
+            svm = Math.sqrt(svm);
+            DataAft[i] = svm;
+            svm = 0;
+        }
+        FallDetect(DataAft);
+    }
+
+    public void FallDetect(double[] Sample){
+        DTW dtw = new DTW(Sample,Template);
+        double similirity = dtw.warpingDistance;
+        if (similirity < 13){
+            Alert();
+            UserAction ua = new UserAction(MainTabActivity.this);
+            try{
+                String username = preferences.getString("UserAccount",null);
+                Calendar c = Calendar.getInstance();
+                String year = String.valueOf(c.get(Calendar.YEAR));
+                String month = String.valueOf(c.get(Calendar.MONTH)+1);
+                String date = String.valueOf(c.get(Calendar.DATE));
+                String hour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+                String minute = String.valueOf(c.get(Calendar.MINUTE));
+
+                ua.upload("FD", username, "falling", year +" "+ month +" "+ date, hour +":"+ minute, Config.ACTION_UPLOAD, new UserAction.SuccessCallback() {
+                    @Override
+                    public void onSuccess(String jsonResult) {
+                        Toast toast = Toast.makeText(MainTabActivity.this,"信息上传成功！",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_VERTICAL,0,0);
+                        toast.show();
+                    }
+                },new UserAction.FailCallback() {
+
+                @Override
+                public void onFail(int status, int reason) {
+                    // TODO Auto-generated method stub
+                    new AlertDialog.Builder(MainTabActivity.this)
+                            .setTitle("tips")
+                            .setMessage("失败了，啊哦~")
+                            .setPositiveButton("确定", null)
+                            .show();
+                }
+            });
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        }
+    }
+
+    //检测到摔倒，用户判断时间
+    public void Alert() {
+        initDialog();
+        vibrator.vibrate(new long[]{100,100,100,100},0);
+    }
+
+    public void initDialog() {
+        mOffTextView = new TextView(this);
+        mOffTextView.setTextSize(26);
+        mOffTextView.setGravity(Gravity.CENTER);
+        mOffTextView.setTextColor(Color.rgb(255,255,255));
+        mDialog = new AlertDialog.Builder(this, R.style.AlertDialog_yh)
+                .setTitle("Caution")
+                .setView(mOffTextView)
+                .setCancelable(false)
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mOffTime.cancel();
+                        dialog.cancel();
+                        vibrator.cancel();
+
+                    }
+                })
+                .create();
+        mDialog.show();
+        mDialog.setCanceledOnTouchOutside(false);
+
+        mOffHandle = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what > 0) {
+                    mOffTextView.setText("Falling   " + msg.what);
+                } else {
+                    if (mDialog != null){
+                        mDialog.cancel();
+                        vibrator.cancel();
+                        // ResultRecord();
+                    }
+                    mOffTime.cancel();
+                }
+                super.handleMessage(msg);
+            }
+        };
+
+        mOffTime = new Timer(true);
+        TimerTask tt = new TimerTask() {
+            int countTime = 20;
+            @Override
+            public void run() {
+                if (countTime > 0) {
+                    countTime--;
+                }
+                Message msg = new Message();
+                msg.what = countTime;
+                mOffHandle.sendMessage(msg);
+            }
+        };
+        mOffTime.schedule(tt, 1000, 1000);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy){
+    }
+
+    private long exitTime = 0;
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
+            if((System.currentTimeMillis()-exitTime) > 2000){
+                Toast.makeText(getApplicationContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                finish();
+                System.exit(0);
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    //初始化柱状图
+   /* private void initHistogram(){
+        histogram = (Histogram) findViewById(R.id.histogram);
+        histogram.setProgress(data);
+        histogram.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int step = (v.getWidth() - 30) / 8;
+                int x = (int) event.getX();
+                for (int i = 0; i < 7; i++) {
+                    if (x > (30 + step * (i + 1) - 30)
+                            && x < (30 + step * (i + 1) + 30)) {
+                        text[i] = 1;
+                        for (int j = 0; j < 7; j++) {
+                            if (i != j) {
+                                text[j] = 0;
+                            }
+                        }
+                        histogram.setText(text);
+                    }
+                }
+                return false;
+            }
+        });
+        initActionBar();
+        initDrawerLayout();
+    }*/
+
+    private void initArcView(){
+        cc = (StepArcView)findViewById(R.id.cc);
+        cc.setCurrentCount(7000,1000);
+        initActionBar();
+        initDrawerLayout();
+
+    }
+
+    @SuppressLint("NewApi")//作用是屏蔽android lint错误
+    private void initActionBar() {
+        actionBar = super.getActionBar();//获得actionbar
+        actionBar.show();
+        actionBar.setDisplayHomeAsUpEnabled(true);//显示home区域
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);//显示返回图片
+        actionBar.setHomeAsUpIndicator(R.drawable.com_btn);//设置返回图标
+
+        //去除默认的ICON图标
+        Drawable colorDrawable = new ColorDrawable(getResources().getColor(android.R.color.transparent));
+        actionBar.setIcon(colorDrawable);
+        actionBar.setDisplayShowCustomEnabled(true);
+        TextView tvTitle = new TextView(this);
+       //tvTitle.setText("主 页");
+        tvTitle.setTextColor(Color.WHITE);
+        tvTitle.setTextSize(18);
+        tvTitle.setGravity(Gravity.CENTER);
+        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        tvTitle.setLayoutParams(params);
+        actionBar.setCustomView(tvTitle);
+    }
+
+   /* @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }*/
+    private void initDrawerLayout() {
+        information = (TextView) findViewById(R.id.information);
+        information.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MainTabActivity.this, InforSettingActivity.class);
+                startActivity(intent);
+            }
+        });
+        alarm = (TextView) findViewById(R.id.alarm);
+        alarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //加入界面跳转代码
+            }
+        });
+        track = (TextView)findViewById(R.id.track);
+        track.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //加入界面跳转代码
+            }
+        });
+        steps = (TextView)findViewById(R.id.steps);
+        steps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        drawerLayout = (DrawerLayout) super.findViewById(R.id.drawer_layout);
+        drawerLayout.setScrimColor(Color.TRANSPARENT);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.back_move_details_normal, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+        };
+        drawerLayout.setDrawerListener(toggle);
+    }
+
+    private void toggleLeftSliding() {
+        if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            drawerLayout.closeDrawer(Gravity.LEFT);
+        } else {
+            drawerLayout.openDrawer(Gravity.LEFT);
+        }
+    }
+
+    @Override
+    public  boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home)
+            toggleLeftSliding();
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        if (featureId == Window.FEATURE_ACTION_BAR && menu != null) {
+            if (menu.getClass().getSimpleName().equals("MenuBuilder")) {
+                try {
+                    Method m = menu.getClass().getDeclaredMethod("setOptionalIconsVisible", Boolean.TYPE);
+                    m.setAccessible(true);
+                    m.invoke(menu, true);
+                } catch (Exception e) {
+                }
+            }
+        }
+        return super.onMenuOpened(featureId, menu);
+    }
+
+}
+

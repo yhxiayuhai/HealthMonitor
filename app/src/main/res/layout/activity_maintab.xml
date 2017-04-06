@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/drawer_layout"
+    android:background="@color/backgroud">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <!--<com.example.user.register.Histogram-->
+        <!--  android:layout_width="match_parent"-->
+         <!-- android:layout_height="250dp"-->
+        <!--  android:id="@+id/histogram">-->
+          <!--</com.example.user.register.Histogram> -->
+        <com.example.user.HealthMonitor.stepcount.StepArcView
+            android:id="@+id/cc"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_marginLeft="60dp"
+                android:id="@+id/calorie"
+                android:src="@drawable/calorie_icon"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:id="@+id/txt_calorie"
+                android:layout_toRightOf="@id/calorie"
+                android:text="卡路里" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:id="@+id/edit_calorie"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/txt_calorie"
+                android:hint="0卡" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:id="@+id/walk"
+                android:layout_toRightOf="@id/edit_calorie"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/distance"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:id="@+id/distance"
+                android:layout_toRightOf="@id/walk"
+                android:text="步行距离"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:id="@+id/edit_distance"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/distance"
+                android:hint="0公里" />
+
+
+        </RelativeLayout>
+      <FrameLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_marginTop="20dp">
+      <com.baidu.mapapi.map.MapView
+          android:id="@+id/bmapView"
+          android:layout_width="match_parent"
+          android:layout_height="300dp"/>
+      <ToggleButton
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/tb"
+          android:layout_gravity="top|right"
+          android:textOff="普通地图"
+          android:textOn="卫星地图"
+          android:checked="false"/>
+      </FrameLayout>
+  </LinearLayout>
+
+  <RelativeLayout
+      android:layout_width="200dp"
+      android:layout_height="match_parent"
+      android:layout_gravity="start"
+      android:id="@+id/relativel"
+      android:layout_marginLeft="20dp"
+      android:paddingTop="30dp"
+      android:background="@color/white">
+
+      <ImageView
+          android:layout_width="30dp"
+          android:layout_height="30dp"
+          android:id="@+id/walk_pic"
+          android:src="@drawable/walk"
+          android:scaleType="fitCenter"
+          android:layout_marginLeft="15dp"
+          />
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/track"
+          android:drawablePadding="20dp"
+          android:gravity="center"
+          android:text="运动轨迹"
+          android:textSize="16sp"
+          android:clickable="true"/>
+
+      <ImageView
+          android:layout_width="30dp"
+          android:layout_height="30dp"
+          android:layout_below="@id/walk_pic"
+          android:id="@+id/step_pic"
+          android:src="@drawable/step"
+          android:scaleType="fitCenter"
+          android:layout_marginLeft="15dp"
+          android:layout_marginTop="30dp"
+          />
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/steps"
+          android:layout_below="@id/track"
+          android:drawablePadding="20dp"
+          android:layout_marginTop="40dp"
+          android:gravity="center"
+          android:text="步数"
+          android:textSize="16sp"
+          android:clickable="true"/>
+
+      <ImageView
+          android:layout_width="30dp"
+          android:layout_height="30dp"
+          android:layout_below="@id/step_pic"
+          android:id="@+id/set_pic"
+          android:src="@drawable/set"
+          android:scaleType="fitCenter"
+          android:layout_marginLeft="15dp"
+          android:layout_marginTop="30dp"
+          />
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/information"
+          android:layout_below="@id/steps"
+          android:layout_marginTop="40dp"
+          android:drawablePadding="20dp"
+          android:gravity="center"
+          android:text="信息配置"
+          android:textSize="16sp"
+          android:clickable="true"/>
+
+      <ImageView
+          android:layout_width="30dp"
+          android:layout_height="30dp"
+          android:layout_below="@id/set_pic"
+          android:id="@+id/alarm_pic"
+          android:src="@drawable/alarm"
+          android:scaleType="fitCenter"
+          android:layout_marginLeft="15dp"
+          android:layout_marginTop="30dp"
+          />
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/alarm"
+          android:layout_below="@id/information"
+          android:layout_marginTop="40dp"
+          android:drawablePadding="20dp"
+          android:gravity="center"
+          android:text="提醒"
+          android:textSize="16sp"
+          android:clickable="true"/>
+  </RelativeLayout>
+
+</android.support.v4.widget.DrawerLayout>

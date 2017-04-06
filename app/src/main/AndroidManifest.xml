@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.user.HealthMonitor">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+
+
+
+    <application
+        android:name="com.example.user.HealthMonitor.LocationApplication"
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@drawable/logo_icon"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Light.NoTitleBar">
+        <activity android:name="com.example.user.HealthMonitor.Activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.example.user.HealthMonitor.Activity.LoginActivity" />
+        <activity android:name="com.example.user.HealthMonitor.Activity.RegisterActivity" />
+        <activity android:name="com.example.user.HealthMonitor.Activity.InforSettingActivity" />
+        <activity
+            android:name="com.example.user.HealthMonitor.Activity.MainTabActivity"
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MainTab"/>
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" />
+        <service
+            android:name="com.baidu.trace.LBSTraceService"
+            android:enabled="true"
+            android:exported="true"/>
+        <service android:name="com.example.user.HealthMonitor.FallDetect.FallService"
+            android:enabled="true"
+            android:exported="true"/>
+        <service
+            android:name="com.example.user.HealthMonitor.stepcount.PedometerService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name="com.example.user.HealthMonitor.stepcount.StepCounterService"
+            android:enabled="true"
+            android:exported="true" />
+        <!-- 启用百度地图服务 -->
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="O15GKOpfLLu68gBneMYguNtGWX84vrOy" />
+        <!-- android:value = "veilLatMTooXGbqeVc2UsqQDoHD9OY9r"/>-->
+
+        <activity android:name="com.example.user.HealthMonitor.stepcount.HistoryStep" />
+        <activity android:name="com.example.user.HealthMonitor.Activity.TraceActivity"></activity>
+    </application>
+
+</manifest>

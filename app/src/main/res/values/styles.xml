@@ -1,0 +1,21 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="Theme.MyTheme" parent="Theme.AppCompat.Light">
+        <item name="android:actionBarStyle">@style/actionbar_style</item>
+    </style>-->
+    <style name="actionbar_style" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">#218FCC</item>
+        <item name="android:actionBarSize">150dip</item>
+        <item name="android:icon">@android:color/transparent</item>
+        <item name="android:itemPadding">20dip</item>
+    </style>
+    <style name="AlertDialog_yh" parent="@android:style/Theme.Holo.Dialog">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:background">@color/dialog_color</item>
+        <item name="android:windowBackground">@color/dialog_color</item>
+    </style>
+
+</resources>

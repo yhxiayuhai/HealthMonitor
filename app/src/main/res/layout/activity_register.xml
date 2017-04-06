@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/backgroud">
+
+    <ImageView
+        android:id="@+id/pic_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/logo"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:clickable="true"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/phone_number"
+                    android:padding="9dp"
+                    android:text="手    机："
+                    android:textColor="#000"
+                    android:textSize="17sp"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/phone_numberEdit"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dip"
+                    android:hint="请输入您的手机号"
+                    android:layout_toRightOf="@id/phone_number"
+                    android:textSize="15sp"
+                    android:inputType="phone"
+                    android:singleLine="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:clickable="true"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/pwd"
+                    android:padding="9dp"
+                    android:text="密    码："
+                    android:textColor="#000"
+                    android:textSize="17sp"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:id="@+id/pwdEdit"
+                    android:layout_marginLeft="15dip"
+                    android:hint="请设置您的密码"
+                    android:layout_toRightOf="@id/pwd"
+                    android:textSize="15sp"/>
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <Button
+            android:id="@+id/cancel_btn"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/button_bg"
+            android:text="取消"
+            android:textColor="#000"/>
+        <Button
+            android:id="@+id/next_btn"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/cancel_btn"
+            android:background="@drawable/button_bg"
+            android:text="注册"
+            android:textColor="#000"/>
+
+    </RelativeLayout>
+
+
+</LinearLayout>
